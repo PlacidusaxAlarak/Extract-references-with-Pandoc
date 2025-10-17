@@ -1,0 +1,4 @@
+bibtexparser
+jinja2
+pydantic
+langchain-core

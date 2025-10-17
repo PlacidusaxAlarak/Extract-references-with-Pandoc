@@ -1,0 +1,65 @@
+<!-- report_template.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Analysis Report - {{ paper_title }}</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;color:#333;background-color:#f8f9fa;margin:0;padding:20px}
+        .container{max-width:900px;margin:0 auto;background-color:#fff;padding:2rem;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
+        h1,h2,h3{color:#0056b3}
+        h1{border-bottom:2px solid #dee2e6;padding-bottom:.5rem;margin-bottom:1rem;text-align:center}
+        h2 em{font-weight:normal;color:#555;font-size:.8em}
+        .reference-item{margin-bottom:2rem;padding:1.5rem;border:1px solid #e9ecef;border-radius:6px;background-color:#fff;transition:box-shadow .3s ease}
+        .reference-item:hover{box-shadow:0 8px 16px rgba(0,0,0,.1)}
+        blockquote{margin:0;padding:1rem;background-color:#f8f9fa;border-left:5px solid #007bff}
+        ul{padding-left:20px}
+        li{margin-bottom:.5rem}
+        code{background-color:#e9ecef;color:#d63384;padding:2px 4px;border-radius:3px}
+        .citation-context li strong:first-child{color:#28a745}
+        .citation-context strong{color:#d9534f} /* This was highlighting keys, now just generic strong */
+        .citation-sentence strong { color: #d9534f; font-weight: bold; } /* Specific highlight for key */
+        .footer{text-align:center;margin-top:2rem;font-size:.9em;color:#6c757d}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reference Context Analysis Report</h1>
+        <h2>Paper: <em>{{ paper_title }}</em></h2>
+
+        {% for item in sorted_references %}
+        <div class="reference-item">
+            <h3>Reference: <code>{{ item.key | default('N/A') }}</code></h3>
+            <blockquote>
+                <p><strong>Author(s):</strong> {{ item.inferred_author | default('Author not extracted') }}</p>
+                <p><strong>Title:</strong> {{ item.inferred_title | default('Title not extracted') }}</p>
+                <p><strong>Source:</strong> <pre>{{ item.content | default('') }}</pre></p>
+            </blockquote>
+            <h4>Citation Contexts:</h4>
+
+            {% if item.citations %}
+            <ul>
+                {% for citation in item.citations %}
+                <li>
+                    <strong>Context {{ loop.index }}:</strong>
+                    <ul class="citation-context">
+                        <li><strong>Section:</strong> {{ citation.section | default('Unknown Section') }}</li>
+                        <li><strong>Previous Sentence:</strong> {{ citation.pre_context if citation.pre_context else "This is the start of the paragraph." }}</li>
+                        <li class="citation-sentence"><strong>Citation Sentence:</strong> {{ citation.citation_sentence_html | safe }}</li>
+                        <li><strong>Following Sentence:</strong> {{ citation.post_context if citation.post_context else "This is the end of the paragraph." }}</li>
+                    </ul>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p><em>No citations found in the main text.</em></p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="footer">
+        <p>Report generated on: {{ generation_time }}</p>
+    </div>
+</body>
+</html>
