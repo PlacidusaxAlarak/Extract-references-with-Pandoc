@@ -1,65 +1,80 @@
 <!-- report_template.html -->
+<!-- 这是一个Jinja2模板文件，用于生成最终的HTML报告。 -->
+<!-- Jinja2的语法（如 {{...}} 和 {%...%}）会在Python后台被替换为真实数据。 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reference Analysis Report - {{ paper_title }}</title>
+    <!-- 页面标题。{{ paper_title }} 是一个Jinja2变量，将被替换为真实的论文标题。 -->
+    <title>参考文献分析报告 - {{ paper_title }}</title>
     <style>
-        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;color:#333;background-color:#f8f9fa;margin:0;padding:20px}
-        .container{max-width:900px;margin:0 auto;background-color:#fff;padding:2rem;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
-        h1,h2,h3{color:#0056b3}
-        h1{border-bottom:2px solid #dee2e6;padding-bottom:.5rem;margin-bottom:1rem;text-align:center}
-        h2 em{font-weight:normal;color:#555;font-size:.8em}
-        .reference-item{margin-bottom:2rem;padding:1.5rem;border:1px solid #e9ecef;border-radius:6px;background-color:#fff;transition:box-shadow .3s ease}
-        .reference-item:hover{box-shadow:0 8px 16px rgba(0,0,0,.1)}
-        blockquote{margin:0;padding:1rem;background-color:#f8f9fa;border-left:5px solid #007bff}
-        ul{padding-left:20px}
-        li{margin-bottom:.5rem}
-        code{background-color:#e9ecef;color:#d63384;padding:2px 4px;border-radius:3px}
-        .citation-context li strong:first-child{color:#28a745}
-        .citation-context strong{color:#d9534f} /* This was highlighting keys, now just generic strong */
-        .citation-sentence strong { color: #d9534f; font-weight: bold; } /* Specific highlight for key */
-        .footer{text-align:center;margin-top:2rem;font-size:.9em;color:#6c757d}
+        /* --- CSS样式表 --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,.1); }
+        h1, h2, h3 { color: #0056b3; }
+        h1 { border-bottom: 2px solid #dee2e6; padding-bottom: .5rem; margin-bottom: 1rem; text-align: center; }
+        h2 em { font-weight: normal; color: #555; font-size: .8em; }
+        .reference-item { margin-bottom: 2rem; padding: 1.5rem; border: 1px solid #e9ecef; border-radius: 6px; background-color: #fff; transition: box-shadow .3s ease; }
+        .reference-item:hover { box-shadow: 0 8px 16px rgba(0,0,0,.1); }
+        blockquote { margin: 0; padding: 1rem; background-color: #f8f9fa; border-left: 5px solid #007bff; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: .5rem; }
+        code { background-color: #e9ecef; color: #d63384; padding: 2px 4px; border-radius: 3px; }
+        .citation-context li strong:first-child { color: #28a745; } /* 上下文标签（如"章节:"）使用绿色 */
+        .citation-sentence strong { color: #d9534f; font-weight: bold; } /* 引用句子中的关键词（虽然这里没用，但可以用于高亮） */
+        .footer { text-align: center; margin-top: 2rem; font-size: .9em; color: #6c757d; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Reference Context Analysis Report</h1>
-        <h2>Paper: <em>{{ paper_title }}</em></h2>
+        <h1>参考文献上下文分析报告</h1>
+        <!-- 显示论文标题。`<em>`标签使其变为斜体。 -->
+        <h2>论文: <em>{{ paper_title }}</em></h2>
 
+        <!-- Jinja2的for循环。遍历从Python传入的`sorted_references`列表。 -->
         {% for item in sorted_references %}
         <div class="reference-item">
-            <h3>Reference: <code>{{ item.key | default('N/A') }}</code></h3>
+            <!-- 显示参考文献的引用键。`| default('N/A')` 是一个Jinja2过滤器，如果`item.key`不存在或为空，则显示'N/A'。 -->
+            <h3>参考文献: <code>{{ item.key | default('N/A') }}</code></h3>
             <blockquote>
-                <p><strong>Author(s):</strong> {{ item.inferred_author | default('Author not extracted') }}</p>
-                <p><strong>Title:</strong> {{ item.inferred_title | default('Title not extracted') }}</p>
-                <p><strong>Source:</strong> <pre>{{ item.content | default('') }}</pre></p>
+                <p><strong>作者:</strong> {{ item.inferred_author | default('未能提取作者') }}</p>
+                <p><strong>标题:</strong> {{ item.inferred_title | default('未能提取标题') }}</p>
+                <!-- `<pre>`标签可以保留`item.content`中的原始格式（如换行和空格）。 -->
+                <p><strong>源文:</strong> <pre>{{ item.content | default('') }}</pre></p>
             </blockquote>
-            <h4>Citation Contexts:</h4>
+            <h4>引用上下文:</h4>
 
+            <!-- Jinja2的if语句。检查当前文献条目是否有关联的引用上下文（`item.citations`列表是否存在且不为空）。 -->
             {% if item.citations %}
             <ul>
+                <!-- 嵌套的for循环，遍历该文献的所有引用上下文。`loop.index`是Jinja2提供的循环计数器，从1开始。 -->
                 {% for citation in item.citations %}
                 <li>
-                    <strong>Context {{ loop.index }}:</strong>
+                    <strong>上下文 {{ loop.index }}:</strong>
                     <ul class="citation-context">
-                        <li><strong>Section:</strong> {{ citation.section | default('Unknown Section') }}</li>
-                        <li><strong>Previous Sentence:</strong> {{ citation.pre_context if citation.pre_context else "This is the start of the paragraph." }}</li>
-                        <li class="citation-sentence"><strong>Citation Sentence:</strong> {{ citation.citation_sentence_html | safe }}</li>
-                        <li><strong>Following Sentence:</strong> {{ citation.post_context if citation.post_context else "This is the end of the paragraph." }}</li>
+                        <li><strong>章节:</strong> {{ citation.section | default('未知章节') }}</li>
+                        <!-- `if ... else ...` 结构用于在没有前文/后文时显示默认文本。 -->
+                        <li><strong>前文:</strong> {{ citation.pre_context if citation.pre_context else "这是段落的开始。" }}</li>
+                        <!-- `| safe` 过滤器是关键：它告诉Jinja2不要转义`citation.citation_sentence_html`变量的内容。
+                             这是因为我们可能在其中包含了HTML标签（例如用于高亮），我们希望这些标签被浏览器直接渲染，而不是显示为纯文本。 -->
+                        <li class="citation-sentence"><strong>引用句:</strong> {{ citation.citation_sentence_html | safe }}</li>
+                        <li><strong>后文:</strong> {{ citation.post_context if citation.post_context else "这是段落的结尾。" }}</li>
                     </ul>
                 </li>
                 {% endfor %}
             </ul>
             {% else %}
-            <p><em>No citations found in the main text.</em></p>
+            <!-- 如果`item.citations`为空，则显示此消息。 -->
+            <p><em>在正文中未找到引用。</em></p>
             {% endif %}
         </div>
         {% endfor %}
     </div>
     <div class="footer">
-        <p>Report generated on: {{ generation_time }}</p>
+        <!-- 显示报告生成的时间。 -->
+        <p>报告生成于: {{ generation_time }}</p>
     </div>
 </body>
 </html>
